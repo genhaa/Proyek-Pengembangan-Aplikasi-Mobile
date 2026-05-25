@@ -18,6 +18,7 @@ class GoogleBooksService(private val client: HttpClient) {
         client.get(BASE_URL) {
             parameter("q", query)
             parameter("maxResults", 20)
+            parameter("key", ApiConfig.googleBooksApiKey)
         }.body()
     }
 }
