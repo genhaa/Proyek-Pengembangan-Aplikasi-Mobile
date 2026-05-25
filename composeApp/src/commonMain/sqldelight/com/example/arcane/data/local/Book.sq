@@ -1,0 +1,52 @@
+-- Book table schema for SQLDelight
+-- File: Book.sq
+
+CREATE TABLE BookEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    googleBookId TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    authors TEXT NOT NULL,
+    description TEXT,
+    coverUrl TEXT,
+    categories TEXT,
+    publishedDate TEXT,
+    pageCount INTEGER,
+    readingStatus TEXT NOT NULL DEFAULT 'TO_READ',
+    notes TEXT NOT NULL DEFAULT '',
+    rating INTEGER,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+-- Get all bookshelf books
+getAllBooks:
+SELECT * FROM BookEntity ORDER BY updatedAt DESC;
+
+-- Get books by reading status
+getBooksByStatus:
+SELECT * FROM BookEntity WHERE readingStatus = ? ORDER BY updatedAt DESC;
+
+-- Get book by its Google Books ID
+getBookByGoogleId:
+SELECT * FROM BookEntity WHERE googleBookId = ?;
+
+-- Get book by local database ID
+getBookById:
+SELECT * FROM BookEntity WHERE id = ?;
+
+-- Insert or replace book details
+insertBook:
+INSERT OR REPLACE INTO BookEntity (googleBookId, title, authors, description, coverUrl, categories, publishedDate, pageCount, readingStatus, notes, rating, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Delete book by local database ID
+deleteBook:
+DELETE FROM BookEntity WHERE id = ?;
+
+-- Update reading status of a book
+updateBookStatus:
+UPDATE BookEntity SET readingStatus = ?, updatedAt = ? WHERE id = ?;
+
+-- Update personal notes and rating
+updateBookNotesAndRating:
+UPDATE BookEntity SET notes = ?, rating = ?, updatedAt = ? WHERE id = ?;
