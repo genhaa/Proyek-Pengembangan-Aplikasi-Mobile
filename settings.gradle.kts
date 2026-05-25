@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Arcane"
 include(":composeApp")
+include(":composeApp:arcane")

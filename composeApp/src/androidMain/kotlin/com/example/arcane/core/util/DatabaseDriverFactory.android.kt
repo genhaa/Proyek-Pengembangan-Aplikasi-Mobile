@@ -5,12 +5,6 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.arcane.data.local.ArcaneDatabase
 
-/**
- * Android implementation of DatabaseDriverFactory
- * 
- * Menggunakan AndroidSqliteDriver yang membungkus SQLite bawaan Android.
- * Database disimpan di internal storage aplikasi.
- */
 actual class DatabaseDriverFactory(
     private val context: Context
 ) {
