@@ -1,39 +1,58 @@
-package com.example.arcane.data.repository
+package com.example.arcane.core.network
 
-import com.example.arcane.core.network.NetworkResult
-import com.example.arcane.core.network.safeApiCall
-import com.example.arcane.data.remote.api.ArcaneApiService
-import com.example.arcane.domain.model.Book
-import com.example.arcane.domain.repository.ArcaneRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 
-class ArcaneRepositoryImpl(
-    private val apiService: ArcaneApiService
-) : ArcaneRepository {
-
-    override fun searchBooks(query: String): Flow<NetworkResult<List<Book>>> = flow {
-        emit(NetworkResult.Loading)
-
-        val result = safeApiCall {
-            val response = apiService.searchBooks(query)
-            response.items?.map {
-                Book(id = it.id, title = it.volumeInfo.title)
-            } ?: emptyList()
-        }
-
-        emit(result)
+object HttpClientFactory {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        prettyPrint = false
+        encodeDefaults = true
     }
 
-    override fun analyzeLiteratureWithAi(prompt: String): Flow<NetworkResult<String>> = flow {
-        emit(NetworkResult.Loading)
+    fun create(enableLogging: Boolean = true): HttpClient {
+        return HttpClient {
+            install(ContentNegotiation) {
+                json(json)
+            }
 
-        val result = safeApiCall {
-            val response = apiService.askGemini(prompt)
-            response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
-                ?: "No response from Gemini"
+            if (enableLogging) {
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            println("HTTP: $message")
+                        }
+                    }
+                    level = LogLevel.BODY
+                }
+            }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000
+                connectTimeoutMillis = 15_000
+                socketTimeoutMillis = 30_000
+            }
         }
+    }
+}
 
-        emit(result)
+sealed class NetworkResult<out T> {
+    data class Success<T>(val data: T) : NetworkResult<T>()
+    data class Error(val message: String, val code: Int? = null) : NetworkResult<Nothing>()
+    data object Loading : NetworkResult<Nothing>()
+}
+
+suspend fun <T> safeApiCall(block: suspend () -> T): NetworkResult<T> {
+    return try {
+        NetworkResult.Success(block())
+    } catch (e: Exception) {
+        NetworkResult.Error(e.message ?: "Unknown error")
     }
 }

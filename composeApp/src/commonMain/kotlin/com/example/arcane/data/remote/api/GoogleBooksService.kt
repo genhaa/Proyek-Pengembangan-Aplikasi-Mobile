@@ -1,5 +1,6 @@
 package com.example.arcane.data.remote.api
 
+import com.example.arcane.core.network.ApiConfig
 import com.example.arcane.data.remote.dto.GoogleBooksResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
