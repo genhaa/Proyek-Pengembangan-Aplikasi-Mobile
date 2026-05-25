@@ -13,7 +13,7 @@ Proyek ini dikembangkan oleh **B Square** sebagai bagian dari tugas mata kuliah 
 | Nama | NIM | GitHub | Role |
 | :--- | :--- | :--- | :--- |
 | [Memory Simanjuntak] | [123140095] | https://github.com/13-095-memory | Lead Developer / UI Design |
-| [Nama Anggota 2] | [NIM 2] | https://github.com/genhaa | Backend & Data |
+| [Grace Exauditha Nababan] | [123140115] | https://github.com/genhaa | Backend & Data |
 
 
 ---
