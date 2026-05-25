@@ -97,7 +97,7 @@ kotlin {
 
 android {
     namespace = "com.example.arcane"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.arcane"
