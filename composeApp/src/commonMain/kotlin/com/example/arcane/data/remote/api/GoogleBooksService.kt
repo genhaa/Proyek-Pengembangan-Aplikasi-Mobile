@@ -1,5 +1,6 @@
 package com.example.arcane.data.remote.api
 
+import com.example.arcane.core.network.ApiConfig
 import com.example.arcane.data.remote.dto.GoogleBooksResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -18,6 +19,7 @@ class GoogleBooksService(private val client: HttpClient) {
         client.get(BASE_URL) {
             parameter("q", query)
             parameter("maxResults", 20)
+            parameter("key", ApiConfig.googleBooksApiKey)
         }.body()
     }
 }
