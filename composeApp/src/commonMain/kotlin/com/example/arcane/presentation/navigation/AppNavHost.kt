@@ -39,8 +39,11 @@ fun AppNavHost(
         composable<Route.Explore> {
             ExploreScreen(
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToBook = { googleBookId ->
-                    navigationActions.navigateToBookDetail(googleBookId)
+                onNavigateToBook = { idDariExplore ->
+                    navigationActions.navigateToBookDetail(
+                        googleBookId = idDariExplore,
+                        localBookId = 0L
+                    )
                 }
             )
         }

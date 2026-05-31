@@ -23,20 +23,51 @@ class BookDetailViewModel(
     private val _events = MutableSharedFlow<BookDetailEvent>()
     val events: SharedFlow<BookDetailEvent> = _events.asSharedFlow()
 
-    fun loadBook(googleBookId: String, localId: Long) {
+    fun loadBook(googleBookId: String, localId: Long, bookFromApi: Book? = null) {
         viewModelScope.launch {
             if (localId > 0) {
                 repository.getBookById(localId).collect { book ->
                     _uiState.value = book?.let { BookDetailUiState.Success(it) } ?: BookDetailUiState.Error("Buku tidak ditemukan")
                 }
             } else {
-                // Jika belum ada di lokal, coba cari statusnya atau buat objek sementara dari pencarian
                 val localBook = repository.getBookByGoogleId(googleBookId)
                 if (localBook != null) {
                     _uiState.value = BookDetailUiState.Success(localBook)
+                } else if (bookFromApi != null) {
+                    _uiState.value = BookDetailUiState.Success(bookFromApi)
                 } else {
-                    // Logic untuk fetch detail dari Google Books jika diperlukan
-                    _uiState.value = BookDetailUiState.Error("Buku belum ditambahkan ke perpustakaan")
+                    try {
+                        val apiResults = repository.searchBooks(googleBookId)
+                        val matchedBook = apiResults.firstOrNull { it.googleBookId == googleBookId }
+
+                        if (matchedBook != null) {
+                            _uiState.value = BookDetailUiState.Success(matchedBook)
+                        } else {
+                            _uiState.value = BookDetailUiState.Error("Detail buku tidak ditemukan")
+                        }
+                    } catch (e: Exception) {
+                        _uiState.value = BookDetailUiState.Error("Gagal memuat data dari internet")
+                    }
+                }
+            }
+        }
+    }
+
+    fun addToLibrary() {
+        val currentState = _uiState.value
+        if (currentState is BookDetailUiState.Success) {
+            viewModelScope.launch {
+                try {
+                    val newId = repository.saveBook(currentState.book)
+
+                    repository.getBookById(newId).collect { updatedBook ->
+                        if (updatedBook != null) {
+                            _uiState.value = BookDetailUiState.Success(updatedBook)
+                            _events.emit(BookDetailEvent.ShowSnackbar("Buku berhasil ditambahkan ke perpustakaan!"))
+                        }
+                    }
+                } catch (e: Exception) {
+                    _events.emit(BookDetailEvent.ShowSnackbar("Gagal menyimpan ke perpustakaan"))
                 }
             }
         }
