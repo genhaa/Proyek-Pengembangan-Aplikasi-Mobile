@@ -94,7 +94,7 @@ class BookRepositoryImpl(
 
     override suspend fun searchBooks(query: String): List<Book> = withContext(Dispatchers.IO) {
         val response = googleBooksService.searchBooks(query)
-        val domainBooks = response.items?.map { item ->
+        response.items?.map { item ->
             val info = item.volumeInfo
             Book(
                 googleBookId = item.id,
@@ -108,30 +108,6 @@ class BookRepositoryImpl(
                 pageCount = info.pageCount
             )
         } ?: emptyList()
-
-        domainBooks.forEach { book ->
-            val existingBook = queries.getBookByGoogleId(book.googleBookId).executeAsOneOrNull()
-            if (existingBook == null) {
-                val now = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-                queries.insertBook(
-                    googleBookId = book.googleBookId,
-                    title = book.title,
-                    authors = book.authors.joinToString(", "),
-                    description = book.description.takeIf { it.isNotBlank() },
-                    coverUrl = book.coverUrl.takeIf { it.isNotBlank() },
-                    categories = book.categories.joinToString(", ").takeIf { it.isNotBlank() },
-                    publishedDate = book.publishedDate.takeIf { it.isNotBlank() },
-                    pageCount = book.pageCount?.toLong(),
-                    readingStatus = "Belum dibaca",
-                    notes = "",
-                    rating = 0L,
-                    createdAt = now,
-                    updatedAt = now
-                )
-            }
-        }
-
-        domainBooks
     }
 
     override suspend fun getBookDetail(googleBookId: String): Book? =
