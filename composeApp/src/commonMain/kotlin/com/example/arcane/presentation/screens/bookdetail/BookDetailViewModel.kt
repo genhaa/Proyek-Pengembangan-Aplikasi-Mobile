@@ -23,44 +23,52 @@ class BookDetailViewModel(
     private val _events = MutableSharedFlow<BookDetailEvent>()
     val events: SharedFlow<BookDetailEvent> = _events.asSharedFlow()
 
-    fun loadBook(googleBookId: String, localId: Long) {
+    fun loadBook(googleBookId: String, localId: Long, bookFromApi: Book? = null) {
         viewModelScope.launch {
-            _uiState.value = BookDetailUiState.Loading
             if (localId > 0) {
                 repository.getBookById(localId).collect { book ->
-                    _uiState.value = book?.let {
-                        BookDetailUiState.Success(it)
-                    } ?: BookDetailUiState.Error("Buku tidak ditemukan")
+                    _uiState.value = book?.let { BookDetailUiState.Success(it) } ?: BookDetailUiState.Error("Buku tidak ditemukan")
                 }
             } else {
-                // Cek lokal dulu
                 val localBook = repository.getBookByGoogleId(googleBookId)
                 if (localBook != null) {
                     _uiState.value = BookDetailUiState.Success(localBook)
+                } else if (bookFromApi != null) {
+                    _uiState.value = BookDetailUiState.Success(bookFromApi)
                 } else {
-                    // Fetch dari Google Books API by ID
-                    val remoteBook = repository.getBookDetail(googleBookId)
-                    _uiState.value = if (remoteBook != null) {
-                        BookDetailUiState.NotInLibrary(remoteBook)
-                    } else {
-                        BookDetailUiState.Error("Buku tidak ditemukan")
+                    try {
+                        val apiResults = repository.searchBooks(googleBookId)
+                        val matchedBook = apiResults.firstOrNull { it.googleBookId == googleBookId }
+
+                        if (matchedBook != null) {
+                            _uiState.value = BookDetailUiState.Success(matchedBook)
+                        } else {
+                            _uiState.value = BookDetailUiState.Error("Detail buku tidak ditemukan")
+                        }
+                    } catch (e: Exception) {
+                        _uiState.value = BookDetailUiState.Error("Gagal memuat data dari internet")
                     }
                 }
             }
         }
     }
-    fun saveToLibrary(book: Book) {
-        viewModelScope.launch {
-            try {
-                repository.saveBook(book)
-                _events.emit(BookDetailEvent.ShowSnackbar("Buku berhasil ditambahkan ke perpustakaan!"))
-                // Reload buku dari lokal setelah disimpan
-                val savedBook = repository.getBookByGoogleId(book.googleBookId)
-                if (savedBook != null) {
-                    _uiState.value = BookDetailUiState.Success(savedBook)
+
+    fun addToLibrary() {
+        val currentState = _uiState.value
+        if (currentState is BookDetailUiState.Success) {
+            viewModelScope.launch {
+                try {
+                    val newId = repository.saveBook(currentState.book)
+
+                    repository.getBookById(newId).collect { updatedBook ->
+                        if (updatedBook != null) {
+                            _uiState.value = BookDetailUiState.Success(updatedBook)
+                            _events.emit(BookDetailEvent.ShowSnackbar("Buku berhasil ditambahkan ke perpustakaan!"))
+                        }
+                    }
+                } catch (e: Exception) {
+                    _events.emit(BookDetailEvent.ShowSnackbar("Gagal menyimpan ke perpustakaan"))
                 }
-            } catch (e: Exception) {
-                _events.emit(BookDetailEvent.ShowSnackbar("Gagal menyimpan buku"))
             }
         }
     }
@@ -98,7 +106,6 @@ class BookDetailViewModel(
 sealed interface BookDetailUiState {
     data object Loading : BookDetailUiState
     data class Success(val book: Book) : BookDetailUiState
-    data class NotInLibrary(val book: Book) : BookDetailUiState
     data class Error(val message: String) : BookDetailUiState
 }
 
