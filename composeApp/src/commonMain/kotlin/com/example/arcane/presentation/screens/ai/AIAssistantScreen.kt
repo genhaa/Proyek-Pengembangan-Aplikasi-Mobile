@@ -65,6 +65,9 @@ fun AIAssistantScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Cek apakah ada konteks buku dari BookDetailScreen
+    val hasBookContext = !initialText.isNullOrBlank()
+
     LaunchedEffect(initialText) {
         viewModel.setInitialText(initialText)
     }
@@ -131,7 +134,37 @@ fun AIAssistantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Action Selector
+
+            // Konteks Buku — tampil kalau dibuka dari BookDetailScreen
+            if (hasBookContext) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Konteks buku sudah dimuat. Pilih aksi di bawah!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+
+            // Pilih Aksi
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -141,10 +174,16 @@ fun AIAssistantScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Pilih Aksi",
+                        text = "Apa yang ingin kamu lakukan?",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = uiState.selectedAction.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
@@ -159,30 +198,37 @@ fun AIAssistantScreen(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = uiState.selectedAction.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
 
-            // Input Field
-            OutlinedTextField(
-                value = uiState.inputText,
-                onValueChange = viewModel::onInputTextChange,
-                label = { Text("Teks Input") },
-                placeholder = { Text("Masukkan judul buku, deskripsi, atau pertanyaanmu...") },
-                minLines = 4,
-                maxLines = 8,
-                isError = uiState.error != null,
-                supportingText = uiState.error?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
+            // Input tambahan — hanya tampil kalau aksi "Tanya Bebas"
+            // atau kalau tidak ada konteks buku
+            if (uiState.selectedAction == AIAction.CHAT || !hasBookContext) {
+                OutlinedTextField(
+                    value = uiState.inputText,
+                    onValueChange = viewModel::onInputTextChange,
+                    label = {
+                        Text(
+                            if (hasBookContext) "Pertanyaanmu"
+                            else "Teks Input"
+                        )
+                    },
+                    placeholder = {
+                        Text(
+                            if (hasBookContext) "Ketik pertanyaanmu tentang buku ini..."
+                            else "Masukkan judul buku atau pertanyaanmu..."
+                        )
+                    },
+                    minLines = 3,
+                    maxLines = 6,
+                    isError = uiState.error != null,
+                    supportingText = uiState.error?.let { { Text(it) } },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
 
-            // Execute Button
+            // Tombol Jalankan
             Button(
                 onClick = { viewModel.executeAction() },
                 enabled = uiState.canExecute,
@@ -191,9 +237,7 @@ fun AIAssistantScreen(
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(end = 8.dp),
+                        modifier = Modifier.size(18.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
@@ -206,11 +250,17 @@ fun AIAssistantScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Jalankan")
+                    Text(
+                        when (uiState.selectedAction) {
+                            AIAction.SUMMARIZE -> "Ringkas Buku Ini"
+                            AIAction.RESEARCH_QUERY -> "Analisis Buku Ini"
+                            AIAction.CHAT -> "Kirim Pertanyaan"
+                        }
+                    )
                 }
             }
 
-            // Result Card
+            // Hasil AI
             AnimatedVisibility(
                 visible = uiState.result != null,
                 enter = fadeIn() + slideInVertically { it / 2 },
@@ -247,8 +297,7 @@ fun AIAssistantScreen(
                         Text(
                             text = uiState.result ?: "",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -282,7 +331,7 @@ fun AIAssistantScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Terapkan")
+                                Text("Terapkan ke Catatan")
                             }
                         }
                     }

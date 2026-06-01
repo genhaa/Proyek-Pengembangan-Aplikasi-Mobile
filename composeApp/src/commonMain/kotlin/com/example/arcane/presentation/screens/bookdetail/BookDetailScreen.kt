@@ -136,6 +136,14 @@ fun BookDetailScreen(
                 message = state.message,
                 onRetry = { viewModel.loadBook(googleBookId, localBookId) }
             )
+            is BookDetailUiState.NotInLibrary -> {
+                NotInLibraryContent(
+                    book = state.book,
+                    modifier = Modifier.padding(paddingValues),
+                    onSaveToLibrary = { viewModel.saveToLibrary(state.book) },
+                    onNavigateToResearch = onNavigateToResearch
+                )
+            }
             is BookDetailUiState.Success -> {
                 BookDetailContent(
                     book = state.book,
@@ -146,6 +154,109 @@ fun BookDetailScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun NotInLibraryContent(
+    book: Book,
+    onSaveToLibrary: () -> Unit,
+    onNavigateToResearch: (String, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    AsyncImage(
+                        model = book.coverUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = book.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = book.authorsFormatted,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+
+        Button(
+            onClick = onSaveToLibrary,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Simpan ke Perpustakaan")
+        }
+
+        Button(
+            onClick = { onNavigateToResearch(book.title, book.description) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Icon(Icons.Default.AutoAwesome, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Tanya Asisten AI")
+        }
+
+        if (book.description.isNotBlank()) {
+            SectionTitle("Deskripsi Buku")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(
+                    text = book.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -167,7 +278,6 @@ private fun BookDetailContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Hero Card: Cover + Info
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -179,7 +289,6 @@ private fun BookDetailContent(
                 modifier = Modifier.padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Cover
                 Box(
                     modifier = Modifier
                         .width(100.dp)
@@ -194,8 +303,6 @@ private fun BookDetailContent(
                         contentScale = ContentScale.Crop
                     )
                 }
-
-                // Info
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -214,7 +321,6 @@ private fun BookDetailContent(
                     Spacer(modifier = Modifier.height(4.dp))
                     StatusBadge(status = book.readingStatus)
 
-                    // Rating display
                     book.rating?.let { r ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             repeat(5) { index ->
@@ -232,7 +338,6 @@ private fun BookDetailContent(
             }
         }
 
-        // AI Research Button
         Button(
             onClick = { onNavigateToResearch(book.title, book.description) },
             modifier = Modifier.fillMaxWidth(),
@@ -246,7 +351,6 @@ private fun BookDetailContent(
             Text("Tanya Asisten AI tentang Buku Ini")
         }
 
-        // Reading Status
         SectionTitle("Status Membaca")
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -271,7 +375,6 @@ private fun BookDetailContent(
             }
         }
 
-        // Rating & Notes
         SectionTitle("Rating & Catatan")
 
         RatingSelector(
@@ -290,7 +393,10 @@ private fun BookDetailContent(
         )
 
         Button(
-            onClick = { onSaveNotes(notes, rating) },
+            onClick = {
+                onSaveNotes(notes, rating)
+                notes = ""
+            },
             modifier = Modifier.align(Alignment.End),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -299,7 +405,6 @@ private fun BookDetailContent(
             Text("Simpan Catatan")
         }
 
-        // Description
         if (book.description.isNotBlank()) {
             SectionTitle("Deskripsi Buku")
             Card(

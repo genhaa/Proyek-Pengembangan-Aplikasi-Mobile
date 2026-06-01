@@ -14,4 +14,5 @@ interface BookRepository {
     suspend fun updateBookStatus(id: Long, status: ReadingStatus)
     suspend fun updateBookNotesAndRating(id: Long, notes: String, rating: Int?)
     suspend fun searchBooks(query: String): List<Book>
+    suspend fun getBookDetail(googleBookId: String): Book?
 }
