@@ -1,8 +1,8 @@
 package com.example.arcane.data.remote.api
 
 import com.example.arcane.core.network.ApiConfig
+import com.example.arcane.data.remote.dto.GoogleBookItem
 import com.example.arcane.data.remote.dto.GoogleBooksResponse
-import com.example.arcane.data.remote.dto.VolumeItem
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -24,8 +24,7 @@ class GoogleBooksService(private val client: HttpClient) {
         }.body()
     }
 
-    // Tambahan baru — fetch detail buku by ID
-    suspend fun getBookDetail(bookId: String): VolumeItem = withContext(Dispatchers.IO) {
+    suspend fun getBookDetail(bookId: String): GoogleBookItem = withContext(Dispatchers.IO) {
         client.get("$BASE_URL/$bookId") {
             parameter("key", ApiConfig.googleBooksApiKey)
         }.body()

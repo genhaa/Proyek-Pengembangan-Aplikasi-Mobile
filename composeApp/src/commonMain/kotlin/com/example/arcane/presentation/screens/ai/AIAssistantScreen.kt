@@ -135,7 +135,6 @@ fun AIAssistantScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Konteks Buku — tampil kalau dibuka dari BookDetailScreen
             if (hasBookContext) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,7 +163,6 @@ fun AIAssistantScreen(
                 }
             }
 
-            // Pilih Aksi
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -201,24 +199,12 @@ fun AIAssistantScreen(
                 }
             }
 
-            // Input tambahan — hanya tampil kalau aksi "Tanya Bebas"
-            // atau kalau tidak ada konteks buku
-            if (uiState.selectedAction == AIAction.CHAT || !hasBookContext) {
+            if (uiState.selectedAction == AIAction.CHAT) {
                 OutlinedTextField(
-                    value = uiState.inputText,
-                    onValueChange = viewModel::onInputTextChange,
-                    label = {
-                        Text(
-                            if (hasBookContext) "Pertanyaanmu"
-                            else "Teks Input"
-                        )
-                    },
-                    placeholder = {
-                        Text(
-                            if (hasBookContext) "Ketik pertanyaanmu tentang buku ini..."
-                            else "Masukkan judul buku atau pertanyaanmu..."
-                        )
-                    },
+                    value = uiState.chatInput,
+                    onValueChange = viewModel::onChatInputChange,
+                    label = { Text("Pertanyaanmu") },
+                    placeholder = { Text("Ketik pertanyaanmu tentang buku ini...") },
                     minLines = 3,
                     maxLines = 6,
                     isError = uiState.error != null,
@@ -226,9 +212,15 @@ fun AIAssistantScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
+            } else {
+                uiState.error?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
-
-            // Tombol Jalankan
             Button(
                 onClick = { viewModel.executeAction() },
                 enabled = uiState.canExecute,
@@ -260,7 +252,6 @@ fun AIAssistantScreen(
                 }
             }
 
-            // Hasil AI
             AnimatedVisibility(
                 visible = uiState.result != null,
                 enter = fadeIn() + slideInVertically { it / 2 },

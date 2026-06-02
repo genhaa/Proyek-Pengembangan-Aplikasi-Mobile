@@ -59,6 +59,7 @@ import com.example.arcane.presentation.components.ErrorState
 import com.example.arcane.presentation.components.LoadingIndicator
 import com.example.arcane.presentation.components.StatusBadge
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.filled.Check
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,6 +140,7 @@ fun BookDetailScreen(
             is BookDetailUiState.NotInLibrary -> {
                 NotInLibraryContent(
                     book = state.book,
+                    isSaved = state.isSaved,
                     modifier = Modifier.padding(paddingValues),
                     onSaveToLibrary = { viewModel.saveToLibrary(state.book) },
                     onNavigateToResearch = onNavigateToResearch
@@ -160,6 +162,7 @@ fun BookDetailScreen(
 @Composable
 private fun NotInLibraryContent(
     book: Book,
+    isSaved: Boolean = false,
     onSaveToLibrary: () -> Unit,
     onNavigateToResearch: (String, String) -> Unit,
     modifier: Modifier = Modifier
@@ -171,6 +174,7 @@ private fun NotInLibraryContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Hero Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -211,20 +215,33 @@ private fun NotInLibraryContent(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+                    if (isSaved) {
+                        Text(
+                            text = "✓ Tersimpan di perpustakaan",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
 
         Button(
             onClick = onSaveToLibrary,
+            enabled = !isSaved,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(
+                if (isSaved) Icons.Default.Check else Icons.Default.Save,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Simpan ke Perpustakaan")
+            Text(if (isSaved) "Tersimpan" else "Simpan ke Perpustakaan")
         }
 
+        // AI Button
         Button(
             onClick = { onNavigateToResearch(book.title, book.description) },
             modifier = Modifier.fillMaxWidth(),
@@ -238,6 +255,7 @@ private fun NotInLibraryContent(
             Text("Tanya Asisten AI")
         }
 
+        // Deskripsi
         if (book.description.isNotBlank()) {
             SectionTitle("Deskripsi Buku")
             Card(
@@ -259,7 +277,6 @@ private fun NotInLibraryContent(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
-
 @Composable
 private fun BookDetailContent(
     book: Book,

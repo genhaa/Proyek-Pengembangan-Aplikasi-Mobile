@@ -31,7 +31,6 @@ fun AppNavHost(
                 onNavigateToBook = { googleBookId, localBookId ->
                     navigationActions.navigateToBookDetail(googleBookId, localBookId)
                 },
-                onNavigateToAI = { navigationActions.navigateToResearchAssistant("", "") },
                 onNavigateToSettings = { navigationActions.navigateToSettings() }
             )
         }

@@ -57,7 +57,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToExplore: () -> Unit,
     onNavigateToBook: (String, Long) -> Unit,
-    onNavigateToAI: () -> Unit,
     onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
@@ -103,9 +102,6 @@ fun HomeScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Cari")
                         }
-                    }
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "Asisten AI")
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Pengaturan")

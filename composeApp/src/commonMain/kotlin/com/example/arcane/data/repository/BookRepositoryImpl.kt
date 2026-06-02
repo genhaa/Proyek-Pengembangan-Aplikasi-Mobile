@@ -110,24 +110,23 @@ class BookRepositoryImpl(
         } ?: emptyList()
     }
 
-    override suspend fun getBookDetail(googleBookId: String): Book? =
-        withContext(Dispatchers.IO) {
-            try {
-                val item = googleBooksService.getBookDetail(googleBookId)
-                val info = item.volumeInfo
-                Book(
-                    googleBookId = item.id,
-                    title = info.title ?: "Unknown Title",
-                    authors = info.authors ?: emptyList(),
-                    description = info.description ?: "",
-                    coverUrl = (info.imageLinks?.thumbnail ?: info.imageLinks?.smallThumbnail ?: "")
-                        .replace("http://", "https://"),
-                    categories = info.categories ?: emptyList(),
-                    publishedDate = info.publishedDate ?: "",
-                    pageCount = info.pageCount
-                )
-            } catch (e: Exception) {
-                null
-            }
+    override suspend fun getBookDetail(googleBookId: String): Book? = withContext(Dispatchers.IO) {
+        try {
+            val item = googleBooksService.getBookDetail(googleBookId)
+            val info = item.volumeInfo
+            Book(
+                googleBookId = item.id,
+                title = info.title,
+                authors = info.authors ?: emptyList(),
+                description = info.description ?: "",
+                coverUrl = (info.imageLinks?.thumbnail ?: info.imageLinks?.smallThumbnail ?: "")
+                    .replace("http://", "https://"),
+                categories = info.categories ?: emptyList(),
+                publishedDate = info.publishedDate ?: "",
+                pageCount = info.pageCount
+            )
+        } catch (e: Exception) {
+            null
         }
+    }
 }
