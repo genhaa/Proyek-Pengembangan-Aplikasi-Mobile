@@ -69,12 +69,12 @@ class BookRepositoryImpl(
         queries.getBookByGoogleId(book.googleBookId).executeAsOne().id
     }
 
-    override suspend fun deleteBook(id: Long) = withContext(Dispatchers.Default) {
+    override suspend fun deleteBook(id: Long) = withContext(Dispatchers.IO) {
         queries.deleteBook(id)
     }
 
     override suspend fun updateBookStatus(id: Long, status: ReadingStatus) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             queries.updateBookStatus(
                 readingStatus = status.name,
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
@@ -83,7 +83,7 @@ class BookRepositoryImpl(
         }
 
     override suspend fun updateBookNotesAndRating(id: Long, notes: String, rating: Int?) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             queries.updateBookNotesAndRating(
                 notes = notes,
                 rating = rating?.toLong(),

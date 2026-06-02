@@ -47,9 +47,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,45 +65,23 @@ fun SettingsScreen(
     val favoriteGenre by viewModel.favoriteGenre.collectAsStateWithLifecycle()
     val readingGoal by viewModel.readingGoal.collectAsStateWithLifecycle()
 
-    var showNameDialog by remember { mutableStateOf(false) }
-    var showGenreDialog by remember { mutableStateOf(false) }
-    var showGoalDialog by remember { mutableStateOf(false) }
+    var profilePictureUrl by remember { mutableStateOf("") }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
 
-    if (showNameDialog) {
-        EditDialog(
-            title = "Nama",
-            initialValue = userName,
-            onConfirm = {
-                viewModel.updateUserName(it)
-                showNameDialog = false
+    if (showEditProfileDialog) {
+        EditProfileDialog(
+            initialName = userName,
+            initialGenre = favoriteGenre,
+            initialGoal = readingGoal.toString(),
+            initialPhotoUrl = profilePictureUrl,
+            onConfirm = { name, genre, goal, photoUrl ->
+                viewModel.updateUserName(name)
+                viewModel.updateFavoriteGenre(genre)
+                goal.toIntOrNull()?.let { viewModel.updateReadingGoal(it) }
+                profilePictureUrl = photoUrl
+                showEditProfileDialog = false
             },
-            onDismiss = { showNameDialog = false }
-        )
-    }
-
-    if (showGenreDialog) {
-        EditDialog(
-            title = "Genre Favorit",
-            initialValue = favoriteGenre,
-            placeholder = "Contoh: Fiction, Science",
-            onConfirm = {
-                viewModel.updateFavoriteGenre(it)
-                showGenreDialog = false
-            },
-            onDismiss = { showGenreDialog = false }
-        )
-    }
-
-    if (showGoalDialog) {
-        EditDialog(
-            title = "Target Buku per Tahun",
-            initialValue = readingGoal.toString(),
-            placeholder = "Contoh: 12",
-            onConfirm = {
-                it.toIntOrNull()?.let { goal -> viewModel.updateReadingGoal(goal) }
-                showGoalDialog = false
-            },
-            onDismiss = { showGoalDialog = false }
+            onDismiss = { showEditProfileDialog = false }
         )
     }
 
@@ -133,42 +113,40 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Profile Section
             ProfileHeader(
                 userName = userName.ifBlank { "Pembaca Arcane" },
                 favoriteGenre = favoriteGenre.ifBlank { "Belum diatur" },
-                onEditClick = { showNameDialog = true }
+                profilePictureUrl = profilePictureUrl,
+                onEditClick = { showEditProfileDialog = true }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Profil Settings Group
             SettingsGroup(title = "Profil") {
                 SettingsItem(
                     icon = Icons.Default.Person,
                     title = "Nama",
                     subtitle = userName.ifBlank { "Belum diatur" },
-                    onClick = { showNameDialog = true }
+                    onClick = { showEditProfileDialog = true }
                 )
                 HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
                 SettingsItem(
                     icon = Icons.Default.Category,
                     title = "Genre Favorit",
                     subtitle = favoriteGenre.ifBlank { "Belum diatur" },
-                    onClick = { showGenreDialog = true }
+                    onClick = { showEditProfileDialog = true }
                 )
                 HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
                 SettingsItem(
                     icon = Icons.Default.Flag,
                     title = "Target Buku per Tahun",
                     subtitle = "$readingGoal buku",
-                    onClick = { showGoalDialog = true }
+                    onClick = { showEditProfileDialog = true }
                 )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tampilan Settings Group
             SettingsGroup(title = "Tampilan") {
                 SettingsSwitchItem(
                     icon = Icons.Default.DarkMode,
@@ -181,7 +159,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tentang Settings Group
             SettingsGroup(title = "Tentang") {
                 SettingsItem(
                     icon = Icons.Default.Book,
@@ -207,6 +184,7 @@ fun SettingsScreen(
 private fun ProfileHeader(
     userName: String,
     favoriteGenre: String,
+    profilePictureUrl: String,
     onEditClick: () -> Unit
 ) {
     Box(
@@ -227,12 +205,21 @@ private fun ProfileHeader(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = userName.take(1).uppercase(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                if (profilePictureUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = profilePictureUrl,
+                        contentDescription = "Foto Profil",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = userName.take(1).uppercase(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
             }
 
             Text(
@@ -248,14 +235,8 @@ private fun ProfileHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
 
-            TextButton(
-                onClick = onEditClick,
-            ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
+            TextButton(onClick = onEditClick) {
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.size(4.dp))
                 Text("Edit Profil")
             }
@@ -264,147 +245,67 @@ private fun ProfileHeader(
 }
 
 @Composable
-private fun SettingsGroup(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Column {
-        Text(
-            text = title.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            content()
-        }
-    }
-}
-
-@Composable
-private fun SettingsItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit = {},
-    showArrow: Boolean = true
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = showArrow) { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
-        }
-        if (showArrow) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsSwitchItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-    }
-}
-
-@Composable
-private fun EditDialog(
-    title: String,
-    initialValue: String,
-    placeholder: String = "",
-    onConfirm: (String) -> Unit,
+private fun EditProfileDialog(
+    initialName: String,
+    initialGenre: String,
+    initialGoal: String,
+    initialPhotoUrl: String,
+    onConfirm: (String, String, String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var value by remember { mutableStateOf(initialValue) }
+    var name by remember { mutableStateOf(initialName) }
+    var genre by remember { mutableStateOf(initialGenre) }
+    var goal by remember { mutableStateOf(initialGoal) }
+    var photoUrl by remember { mutableStateOf(initialPhotoUrl) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Edit $title",
-                fontWeight = FontWeight.Bold
-            )
-        },
+        title = { Text(text = "Edit Profil Terpadu", fontWeight = FontWeight.Bold) },
         text = {
-            OutlinedTextField(
-                value = value,
-                onValueChange = { value = it },
-                label = { Text(title) },
-                placeholder = { Text(placeholder) },
-                singleLine = true,
-                shape = RoundedCornerShape(10.dp),
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nama") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = genre,
+                    onValueChange = { genre = it },
+                    label = { Text("Genre Favorit") },
+                    placeholder = { Text("Contoh: Fiction, Science") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = goal,
+                    onValueChange = { goal = it },
+                    label = { Text("Target Buku per Tahun") },
+                    placeholder = { Text("Contoh: 12") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = photoUrl,
+                    onValueChange = { photoUrl = it },
+                    label = { Text("URL Foto Profil") },
+                    placeholder = { Text("Masukkan link gambar internet") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(value) }) {
-                Text("Simpan", color = MaterialTheme.colorScheme.primary)
+            TextButton(onClick = { onConfirm(name, genre, goal, photoUrl) }) {
+                Text("Simpan Semua", color = MaterialTheme.colorScheme.primary)
             }
         },
         dismissButton = {
@@ -413,4 +314,36 @@ private fun EditDialog(
             }
         }
     )
+}
+
+@Composable
+private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+    Column {
+        Text(text = title.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant)) { content() }
+    }
+}
+
+@Composable
+private fun SettingsItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit = {}, showArrow: Boolean = true) {
+    Row(modifier = Modifier.fillMaxWidth().clickable(enabled = showArrow) { onClick() }.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+        }
+        if (showArrow) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)) }
+    }
+}
+
+@Composable
+private fun SettingsSwitchItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
 }

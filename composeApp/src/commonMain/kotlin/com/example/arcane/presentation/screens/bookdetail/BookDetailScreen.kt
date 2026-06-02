@@ -159,6 +159,7 @@ fun BookDetailScreen(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun NotInLibraryContent(
     book: Book,
@@ -174,7 +175,6 @@ private fun NotInLibraryContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Hero Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -215,6 +215,37 @@ private fun NotInLibraryContent(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+
+                    if (book.categories.isNotEmpty()) {
+                        val cleanedGenres = book.categories.flatMap { category ->
+                            category.split("/").map { it.trim() }
+                        }.distinct()
+
+                        androidx.compose.foundation.layout.FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            cleanedGenres.forEach { genreString ->
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = genreString,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     if (isSaved) {
                         Text(
                             text = "✓ Tersimpan di perpustakaan",
@@ -241,9 +272,8 @@ private fun NotInLibraryContent(
             Text(if (isSaved) "Tersimpan" else "Simpan ke Perpustakaan")
         }
 
-        // AI Button
         Button(
-            onClick = { onNavigateToResearch(book.title, book.description) },
+            onClick = { onNavigateToResearch(book.title, book.description.stripHtmlAndEntities()) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -255,7 +285,6 @@ private fun NotInLibraryContent(
             Text("Tanya Asisten AI")
         }
 
-        // Deskripsi
         if (book.description.isNotBlank()) {
             SectionTitle("Deskripsi Buku")
             Card(
@@ -266,7 +295,7 @@ private fun NotInLibraryContent(
                 )
             ) {
                 Text(
-                    text = book.description,
+                    text = book.description.stripHtmlAndEntities(),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -277,6 +306,8 @@ private fun NotInLibraryContent(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun BookDetailContent(
     book: Book,
@@ -335,6 +366,37 @@ private fun BookDetailContent(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+
+                    if (book.categories.isNotEmpty()) {
+                        val cleanedGenres = book.categories.flatMap { category ->
+                            category.split("/").map { it.trim() }
+                        }.distinct()
+
+                        androidx.compose.foundation.layout.FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            cleanedGenres.forEach { genreString ->
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = genreString,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(4.dp))
                     StatusBadge(status = book.readingStatus)
 
@@ -356,7 +418,7 @@ private fun BookDetailContent(
         }
 
         Button(
-            onClick = { onNavigateToResearch(book.title, book.description) },
+            onClick = { onNavigateToResearch(book.title, book.description.stripHtmlAndEntities()) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -432,7 +494,7 @@ private fun BookDetailContent(
                 )
             ) {
                 Text(
-                    text = book.description,
+                    text = book.description.stripHtmlAndEntities(),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -503,4 +565,13 @@ private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Uni
             }
         }
     )
+}
+
+private fun String.stripHtmlAndEntities(): String {
+    return this
+        .replace(Regex("<[^>]*>"), "")
+        .replace("&quot;", "\"")
+        .replace("&amp;", "&")
+        .replace(Regex("\\n{3,}"), "\n\n")
+        .trim()
 }
