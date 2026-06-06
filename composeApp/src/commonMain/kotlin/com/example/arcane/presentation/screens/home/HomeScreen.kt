@@ -57,7 +57,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToExplore: () -> Unit,
     onNavigateToBook: (String, Long) -> Unit,
-    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,6 +93,7 @@ fun HomeScreen(
                         }
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
@@ -102,9 +102,6 @@ fun HomeScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Cari")
                         }
-                    }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
                     }
                 }
             )

@@ -1,17 +1,72 @@
 package com.example.arcane.presentation.navigation
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.arcane.presentation.screens.bookdetail.BookDetailScreen
 import com.example.arcane.presentation.screens.explore.ExploreScreen
 import com.example.arcane.presentation.screens.home.HomeScreen
 import com.example.arcane.presentation.screens.ai.AIAssistantScreen
+import com.example.arcane.presentation.screens.letterbox.LetterboxScreen
 import com.example.arcane.presentation.screens.settings.SettingsScreen
+
+// Data class untuk item bottom nav
+data class BottomNavItem(
+    val label: String,
+    val route: Route,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
+)
+
+val bottomNavItems = listOf(
+    BottomNavItem(
+        label = "Beranda",
+        route = Route.Home,
+        selectedIcon = Icons.Filled.Home,
+        unselectedIcon = Icons.Outlined.Home
+    ),
+    BottomNavItem(
+        label = "Jelajah",
+        route = Route.Explore,
+        selectedIcon = Icons.Filled.Explore,
+        unselectedIcon = Icons.Outlined.Explore
+    ),
+    BottomNavItem(
+        label = "Letterbox",
+        route = Route.Letterbox,
+        selectedIcon = Icons.Filled.Book,
+        unselectedIcon = Icons.Outlined.Book
+    ),
+    BottomNavItem(
+        label = "Pengaturan",
+        route = Route.Settings,
+        selectedIcon = Icons.Filled.Settings,
+        unselectedIcon = Icons.Outlined.Settings
+    )
+)
 
 @Composable
 fun AppNavHost(
@@ -19,58 +74,98 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    NavHost(
-        navController = navController,
-        startDestination = Route.Home,
-        modifier = modifier
-    ) {
-        composable<Route.Home> {
-            HomeScreen(
-                onNavigateToExplore = { navigationActions.navigateToExplore() },
-                onNavigateToBook = { googleBookId, localBookId ->
-                    navigationActions.navigateToBookDetail(googleBookId, localBookId)
-                },
-                onNavigateToSettings = { navigationActions.navigateToSettings() }
-            )
-        }
+    // Screen yang menampilkan bottom nav
+    val showBottomNav = currentDestination?.let { dest ->
+        bottomNavItems.any { dest.hasRoute(it.route::class) }
+    } ?: false
 
-        composable<Route.Explore> {
-            ExploreScreen(
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToBook = { idDariExplore ->
-                    navigationActions.navigateToBookDetail(
-                        googleBookId = idDariExplore,
-                        localBookId = 0L
-                    )
+    Scaffold(
+        bottomBar = {
+            if (showBottomNav) {
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val isSelected = currentDestination?.hasRoute(item.route::class) == true
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                when (item.route) {
+                                    Route.Home -> navigationActions.navigateToHome()
+                                    Route.Explore -> navigationActions.navigateToExplore()
+                                    Route.Letterbox -> navigationActions.navigateToLetterbox()
+                                    Route.Settings -> navigationActions.navigateToSettings()
+                                    else -> {}
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = { Text(item.label) }
+                        )
+                    }
                 }
-            )
+            }
         }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = Route.Home,
+            modifier = modifier.padding(paddingValues)
+        ) {
+            composable<Route.Home> {
+                HomeScreen(
+                    onNavigateToExplore = { navigationActions.navigateToExplore() },
+                    onNavigateToBook = { googleBookId, localBookId ->
+                        navigationActions.navigateToBookDetail(googleBookId, localBookId)
+                    },
+                )
+            }
 
-        composable<Route.BookDetail> { backStackEntry ->
-            val route: Route.BookDetail = backStackEntry.toRoute()
-            BookDetailScreen(
-                googleBookId = route.googleBookId,
-                localBookId = route.localBookId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToResearch = { title, description ->
-                    navigationActions.navigateToResearchAssistant(title, description)
-                }
-            )
-        }
+            composable<Route.Explore> {
+                ExploreScreen(
+                    onNavigateBack = { navigationActions.navigateBack() },
+                    onNavigateToBook = { idDariExplore ->
+                        navigationActions.navigateToBookDetail(
+                            googleBookId = idDariExplore,
+                            localBookId = 0L
+                        )
+                    }
+                )
+            }
 
-        composable<Route.ResearchAssistant> { backStackEntry ->
-            val route: Route.ResearchAssistant = backStackEntry.toRoute()
-            AIAssistantScreen(
-                initialText = "Buku: ${route.bookTitle}\n\nDeskripsi: ${route.bookDescription}",
-                onNavigateBack = { navigationActions.navigateBack() }
-            )
-        }
+            composable<Route.Letterbox> {
+                LetterboxScreen()
+            }
+            composable<Route.BookDetail> { backStackEntry ->
+                val route: Route.BookDetail = backStackEntry.toRoute()
+                BookDetailScreen(
+                    googleBookId = route.googleBookId,
+                    localBookId = route.localBookId,
+                    onNavigateBack = { navigationActions.navigateBack() },
+                    onNavigateToResearch = { title, description ->
+                        navigationActions.navigateToResearchAssistant(title, description)
+                    }
+                )
+            }
 
-        composable<Route.Settings> {
-            SettingsScreen(
-                onNavigateBack = { navigationActions.navigateBack() }
-            )
+            composable<Route.ResearchAssistant> { backStackEntry ->
+                val route: Route.ResearchAssistant = backStackEntry.toRoute()
+                AIAssistantScreen(
+                    initialText = "Buku: ${route.bookTitle}\n\nDeskripsi: ${route.bookDescription}",
+                    onNavigateBack = { navigationActions.navigateBack() }
+                )
+            }
+
+            composable<Route.Settings> {
+                SettingsScreen(
+                    onNavigateBack = { navigationActions.navigateBack() }
+                )
+            }
         }
     }
 }
@@ -79,12 +174,30 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
     return object : NavigationActions {
         override fun navigateToHome() {
             navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
+                popUpTo(Route.Home) { inclusive = false }
+                launchSingleTop = true
             }
         }
 
         override fun navigateToExplore() {
-            navController.navigate(Route.Explore)
+            navController.navigate(Route.Explore) {
+                popUpTo(Route.Home) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+
+        override fun navigateToLetterbox() {
+            navController.navigate(Route.Letterbox) {
+                popUpTo(Route.Home) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+
+        override fun navigateToSettings() {
+            navController.navigate(Route.Settings) {
+                popUpTo(Route.Home) { inclusive = false }
+                launchSingleTop = true
+            }
         }
 
         override fun navigateToBookDetail(googleBookId: String, localBookId: Long) {
@@ -93,10 +206,6 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateToResearchAssistant(bookTitle: String, bookDescription: String) {
             navController.navigate(Route.ResearchAssistant(bookTitle, bookDescription))
-        }
-
-        override fun navigateToSettings() {
-            navController.navigate(Route.Settings)
         }
 
         override fun navigateBack() {

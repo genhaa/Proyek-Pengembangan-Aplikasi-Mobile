@@ -31,6 +31,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import com.example.arcane.presentation.screens.letterbox.LetterboxViewModel
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
@@ -80,6 +81,7 @@ val viewModelModule = module {
     viewModelOf(::BookDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::LetterboxViewModel)
 }
 
 val sharedModules = listOf(
