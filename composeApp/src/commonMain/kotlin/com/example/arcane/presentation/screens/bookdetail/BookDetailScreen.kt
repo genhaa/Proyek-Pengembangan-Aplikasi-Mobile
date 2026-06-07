@@ -102,18 +102,26 @@ fun BookDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Detail Buku",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Column {
+                        Text(
+                            text = "Detail Buku",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Informasi lengkap buku",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),

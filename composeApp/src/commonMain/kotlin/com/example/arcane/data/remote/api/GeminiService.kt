@@ -20,7 +20,7 @@ class GeminiService(private val client: HttpClient) {
 
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        private const val MODEL = "gemini-3.0-flash"
     }
 
     suspend fun generateContent(
@@ -36,11 +36,15 @@ class GeminiService(private val client: HttpClient) {
 
         contents.add(GeminiContent(parts = listOf(GeminiPart(text = prompt)), role = "user"))
 
+        println("GeminiDebug - Total contents: ${contents.size}")
+        println("GeminiDebug - Prompt length: ${prompt.length} chars")
+        systemPrompt?.let { println("GeminiDebug - SystemPrompt length: ${it.length} chars") }
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(temperature = 0.7, maxOutputTokens = 2000)
         )
 
+        println("GeminiDebug - URL: $BASE_URL/models/$MODEL:generateContent")
         val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
             contentType(ContentType.Application.Json)
             parameter("key", ApiConfig.geminiApiKey)

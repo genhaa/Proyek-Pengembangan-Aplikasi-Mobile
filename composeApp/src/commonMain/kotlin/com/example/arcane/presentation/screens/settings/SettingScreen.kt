@@ -57,7 +57,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
@@ -89,18 +88,16 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Pengaturan",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    Column {
+                        Text(
+                            text = "Pengaturan",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )

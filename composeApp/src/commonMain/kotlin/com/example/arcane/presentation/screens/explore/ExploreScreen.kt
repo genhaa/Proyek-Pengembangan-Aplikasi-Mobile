@@ -37,7 +37,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
-    onNavigateBack: () -> Unit,
     onNavigateToBook: (String) -> Unit,
     viewModel: ExploreViewModel = koinViewModel()
 ) {
@@ -63,11 +62,7 @@ fun ExploreScreen(
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0), // ← tambahkan ini
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )

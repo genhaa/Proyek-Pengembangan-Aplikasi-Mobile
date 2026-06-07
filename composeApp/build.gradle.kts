@@ -79,6 +79,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation(libs.compose.ui.test)
         }
 
         androidMain.dependencies {
@@ -92,8 +93,18 @@ kotlin {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.native.driver)
         }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.ui.test.junit4)
+                implementation(libs.ui.test.manifest)
+                implementation("io.insert-koin:koin-test:4.0.0")
+                implementation("io.insert-koin:koin-android-test:4.0.0")
+            }
+        }
     }
 }
+
 
 android {
     namespace = "com.example.arcane"
