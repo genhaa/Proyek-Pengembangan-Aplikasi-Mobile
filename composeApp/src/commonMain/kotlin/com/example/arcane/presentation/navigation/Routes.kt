@@ -11,6 +11,9 @@ sealed interface Route {
     data object Explore : Route
 
     @Serializable
+    data object Letterbox : Route
+
+    @Serializable
     data class BookDetail(
         val googleBookId: String,
         val localBookId: Long = 0L
@@ -29,6 +32,7 @@ sealed interface Route {
 interface NavigationActions {
     fun navigateToHome()
     fun navigateToExplore()
+    fun navigateToLetterbox()
     fun navigateToBookDetail(googleBookId: String, localBookId: Long = 0L)
     fun navigateToResearchAssistant(bookTitle: String, bookDescription: String)
     fun navigateToSettings()

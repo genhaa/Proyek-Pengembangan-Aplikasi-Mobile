@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -44,7 +45,7 @@ class ExploreViewModel(
                 } else if (_selectedGenre.value != null) {
                     searchBooks(_selectedGenre.value!!)
                 } else {
-                    _uiState.value = ExploreUiState.Initial
+                    searchBooks("")
                 }
             }
             .launchIn(viewModelScope)
@@ -76,7 +77,42 @@ class ExploreViewModel(
                     ExploreUiState.Success(results)
                 }
             } catch (e: Exception) {
-                _uiState.value = ExploreUiState.Error(e.message ?: "Gagal memuat data")
+                try {
+                    val allLocalBooks = repository.getAllBooks().first()
+
+                    if (allLocalBooks.isNotEmpty()) {
+                        val currentGenre = _selectedGenre.value
+
+                        if (currentGenre != null) {
+                            val filteredBooks = allLocalBooks.filter { book ->
+                                book.categories.any {
+                                    it.contains(
+                                        currentGenre,
+                                        ignoreCase = true
+                                    )
+                                } ||
+                                        book.description.contains(
+                                            currentGenre,
+                                            ignoreCase = true
+                                        ) ||
+                                        query.contains(book.title, ignoreCase = true)
+                            }
+
+                            if (filteredBooks.isNotEmpty()) {
+                                _uiState.value = ExploreUiState.Success(filteredBooks)
+                            } else {
+                                _uiState.value = ExploreUiState.Empty
+                            }
+                        } else {
+                            _uiState.value = ExploreUiState.Success(allLocalBooks)
+                        }
+                    } else {
+                        _uiState.value =
+                            ExploreUiState.Error("Koneksi terputus. Tidak ada koleksi lokal.")
+                    }
+                } catch (localException: Exception) {
+                    _uiState.value = ExploreUiState.Error("Gagal memuat data offline")
+                }
             }
         }
     }

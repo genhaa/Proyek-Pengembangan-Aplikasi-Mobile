@@ -69,12 +69,12 @@ class BookRepositoryImpl(
         queries.getBookByGoogleId(book.googleBookId).executeAsOne().id
     }
 
-    override suspend fun deleteBook(id: Long) = withContext(Dispatchers.Default) {
+    override suspend fun deleteBook(id: Long) = withContext(Dispatchers.IO) {
         queries.deleteBook(id)
     }
 
     override suspend fun updateBookStatus(id: Long, status: ReadingStatus) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             queries.updateBookStatus(
                 readingStatus = status.name,
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
@@ -83,7 +83,7 @@ class BookRepositoryImpl(
         }
 
     override suspend fun updateBookNotesAndRating(id: Long, notes: String, rating: Int?) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             queries.updateBookNotesAndRating(
                 notes = notes,
                 rating = rating?.toLong(),
@@ -98,7 +98,7 @@ class BookRepositoryImpl(
             val info = item.volumeInfo
             Book(
                 googleBookId = item.id,
-                title = info.title,
+                title = info.title ?: "Unknown Title",
                 authors = info.authors ?: emptyList(),
                 description = info.description ?: "",
                 coverUrl = (info.imageLinks?.thumbnail ?: info.imageLinks?.smallThumbnail ?: "")
@@ -108,5 +108,25 @@ class BookRepositoryImpl(
                 pageCount = info.pageCount
             )
         } ?: emptyList()
+    }
+
+    override suspend fun getBookDetail(googleBookId: String): Book? = withContext(Dispatchers.IO) {
+        try {
+            val item = googleBooksService.getBookDetail(googleBookId)
+            val info = item.volumeInfo
+            Book(
+                googleBookId = item.id,
+                title = info.title,
+                authors = info.authors ?: emptyList(),
+                description = info.description ?: "",
+                coverUrl = (info.imageLinks?.thumbnail ?: info.imageLinks?.smallThumbnail ?: "")
+                    .replace("http://", "https://"),
+                categories = info.categories ?: emptyList(),
+                publishedDate = info.publishedDate ?: "",
+                pageCount = info.pageCount
+            )
+        } catch (e: Exception) {
+            null
+        }
     }
 }

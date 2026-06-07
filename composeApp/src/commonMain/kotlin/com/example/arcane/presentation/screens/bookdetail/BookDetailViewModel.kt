@@ -25,19 +25,37 @@ class BookDetailViewModel(
 
     fun loadBook(googleBookId: String, localId: Long) {
         viewModelScope.launch {
+            _uiState.value = BookDetailUiState.Loading
             if (localId > 0) {
                 repository.getBookById(localId).collect { book ->
-                    _uiState.value = book?.let { BookDetailUiState.Success(it) } ?: BookDetailUiState.Error("Buku tidak ditemukan")
+                    _uiState.value = book?.let {
+                        BookDetailUiState.Success(it)
+                    } ?: BookDetailUiState.Error("Buku tidak ditemukan")
                 }
             } else {
-                // Jika belum ada di lokal, coba cari statusnya atau buat objek sementara dari pencarian
                 val localBook = repository.getBookByGoogleId(googleBookId)
                 if (localBook != null) {
                     _uiState.value = BookDetailUiState.Success(localBook)
                 } else {
-                    // Logic untuk fetch detail dari Google Books jika diperlukan
-                    _uiState.value = BookDetailUiState.Error("Buku belum ditambahkan ke perpustakaan")
+                    // Fetch dari Google Books API by ID
+                    val remoteBook = repository.getBookDetail(googleBookId)
+                    _uiState.value = if (remoteBook != null) {
+                        BookDetailUiState.NotInLibrary(remoteBook)
+                    } else {
+                        BookDetailUiState.Error("Buku tidak ditemukan")
+                    }
                 }
+            }
+        }
+    }
+    fun saveToLibrary(book: Book) {
+        viewModelScope.launch {
+            try {
+                repository.saveBook(book)
+                _events.emit(BookDetailEvent.ShowSnackbar("✓ Buku berhasil ditambahkan ke perpustakaan!"))
+                _uiState.value = BookDetailUiState.NotInLibrary(book, isSaved = true)
+            } catch (e: Exception) {
+                _events.emit(BookDetailEvent.ShowSnackbar("Gagal menyimpan buku"))
             }
         }
     }
@@ -75,6 +93,7 @@ class BookDetailViewModel(
 sealed interface BookDetailUiState {
     data object Loading : BookDetailUiState
     data class Success(val book: Book) : BookDetailUiState
+    data class NotInLibrary(val book: Book, val isSaved: Boolean = false) : BookDetailUiState
     data class Error(val message: String) : BookDetailUiState
 }
 
