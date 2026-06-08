@@ -20,31 +20,29 @@ class GeminiService(private val client: HttpClient) {
 
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-3.0-flash"
+        private const val MODEL = "gemini-3.1-flash-lite"
     }
 
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
-        val contents = mutableListOf<GeminiContent>()
+        val contents = listOf(
+            GeminiContent(parts = listOf(GeminiPart(text = prompt)), role = "user")
+        )
 
-        if (systemPrompt != null) {
-            contents.add(GeminiContent(parts = listOf(GeminiPart(text = systemPrompt)), role = "user"))
-            contents.add(GeminiContent(parts = listOf(GeminiPart(text = "Baik, saya akan mengikuti instruksi tersebut.")), role = "model"))
+        val systemInstruction = systemPrompt?.let {
+            GeminiContent(parts = listOf(GeminiPart(text = it)), role = "user")
         }
 
-        contents.add(GeminiContent(parts = listOf(GeminiPart(text = prompt)), role = "user"))
-
-        println("GeminiDebug - Total contents: ${contents.size}")
-        println("GeminiDebug - Prompt length: ${prompt.length} chars")
-        systemPrompt?.let { println("GeminiDebug - SystemPrompt length: ${it.length} chars") }
         val request = GeminiRequest(
             contents = contents,
+            systemInstruction = systemInstruction,
             generationConfig = GenerationConfig(temperature = 0.7, maxOutputTokens = 2000)
         )
 
         println("GeminiDebug - URL: $BASE_URL/models/$MODEL:generateContent")
+
         val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
             contentType(ContentType.Application.Json)
             parameter("key", ApiConfig.geminiApiKey)
