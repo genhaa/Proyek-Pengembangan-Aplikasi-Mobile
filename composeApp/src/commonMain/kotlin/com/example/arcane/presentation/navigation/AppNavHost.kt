@@ -32,14 +32,11 @@ import com.example.arcane.presentation.screens.home.HomeScreen
 import com.example.arcane.presentation.screens.ai.AIAssistantScreen
 import com.example.arcane.presentation.screens.letterbox.LetterboxScreen
 import com.example.arcane.presentation.screens.settings.SettingsScreen
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 
-// Data class untuk item bottom nav
 data class BottomNavItem(
     val label: String,
     val route: Route,
@@ -56,7 +53,7 @@ val bottomNavItems = listOf(
     ),
     BottomNavItem(
         label = "Jelajah",
-        route = Route.Explore,
+        route = Route.Explore(),
         selectedIcon = Icons.Filled.Explore,
         unselectedIcon = Icons.Outlined.Explore
     ),
@@ -83,7 +80,6 @@ fun AppNavHost(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Screen yang menampilkan bottom nav
     val showBottomNav = currentDestination?.let { dest ->
         bottomNavItems.any { dest.hasRoute(it.route::class) }
     } ?: false
@@ -99,7 +95,7 @@ fun AppNavHost(
                             onClick = {
                                 when (item.route) {
                                     Route.Home -> navigationActions.navigateToHome()
-                                    Route.Explore -> navigationActions.navigateToExplore()
+                                    is Route.Explore -> navigationActions.navigateToExplore("")
                                     Route.Letterbox -> navigationActions.navigateToLetterbox()
                                     Route.Settings -> navigationActions.navigateToSettings()
                                     else -> {}
@@ -123,68 +119,45 @@ fun AppNavHost(
             startDestination = Route.Home,
             modifier = modifier.padding(paddingValues),
             enterTransition = {
-                slideInHorizontally(
-                    initialOffsetX = { it },
-                    animationSpec = androidx.compose.animation.core.tween(300)
-                ) + fadeIn(animationSpec = androidx.compose.animation.core.tween(300))
+                slideInHorizontally(initialOffsetX = { it }) + fadeIn()
             },
             exitTransition = {
-                slideOutHorizontally(
-                    targetOffsetX = { -it / 2 },
-                    animationSpec = androidx.compose.animation.core.tween(300)
-                ) + fadeOut(animationSpec = androidx.compose.animation.core.tween(300))
+                slideOutHorizontally(targetOffsetX = { -it / 2 }) + fadeOut()
             },
             popEnterTransition = {
-                slideInHorizontally(
-                    initialOffsetX = { -it },
-                    animationSpec = androidx.compose.animation.core.tween(300)
-                ) + fadeIn(animationSpec = androidx.compose.animation.core.tween(300))
+                slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
             },
             popExitTransition = {
-                slideOutHorizontally(
-                    targetOffsetX = { it },
-                    animationSpec = androidx.compose.animation.core.tween(300)
-                ) + fadeOut(animationSpec = androidx.compose.animation.core.tween(300))
+                slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
             }
         ) {
-            composable<Route.Home>(
-                enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) }
-            ) {
+            composable<Route.Home> {
                 HomeScreen(
-                    onNavigateToExplore = { navigationActions.navigateToExplore() },
+                    onNavigateToExplore = { navigationActions.navigateToExplore("") },
                     onNavigateToBook = { googleBookId, localBookId ->
                         navigationActions.navigateToBookDetail(googleBookId, localBookId)
                     },
                 )
             }
 
-            composable<Route.Explore>(
-                enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) }
-            ) {
+            composable<Route.Explore> { backStackEntry ->
+                val exploreRoute: Route.Explore = backStackEntry.toRoute()
                 ExploreScreen(
+                    initialQuery = exploreRoute.searchQuery,
                     onNavigateToBook = { idDariExplore ->
-                        navigationActions.navigateToBookDetail(
-                            googleBookId = idDariExplore,
-                            localBookId = 0L
-                        )
+                        navigationActions.navigateToBookDetail(googleBookId = idDariExplore, localBookId = 0L)
                     }
                 )
             }
 
-            composable<Route.Letterbox>(
-                enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) }
-            ) {
-                LetterboxScreen()
+            composable<Route.Letterbox> {
+                LetterboxScreen(
+                    onNavigateToBook = { judulBukuDariAI ->
+                        navigationActions.navigateToExplore(judulBukuDariAI)
+                    }
+                )
             }
+
             composable<Route.BookDetail> { backStackEntry ->
                 val route: Route.BookDetail = backStackEntry.toRoute()
                 BookDetailScreen(
@@ -205,12 +178,7 @@ fun AppNavHost(
                 )
             }
 
-            composable<Route.Settings>(
-                enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-                popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) }
-            ) {
+            composable<Route.Settings> {
                 SettingsScreen()
             }
         }
@@ -226,8 +194,8 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             }
         }
 
-        override fun navigateToExplore() {
-            navController.navigate(Route.Explore) {
+        override fun navigateToExplore(query: String) {
+            navController.navigate(Route.Explore(searchQuery = query)) {
                 popUpTo(Route.Home) { inclusive = false }
                 launchSingleTop = true
             }

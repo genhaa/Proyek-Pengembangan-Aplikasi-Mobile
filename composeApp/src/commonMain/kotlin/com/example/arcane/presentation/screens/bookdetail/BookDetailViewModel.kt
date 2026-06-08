@@ -37,7 +37,6 @@ class BookDetailViewModel(
                 if (localBook != null) {
                     _uiState.value = BookDetailUiState.Success(localBook)
                 } else {
-                    // Fetch dari Google Books API by ID
                     val remoteBook = repository.getBookDetail(googleBookId)
                     _uiState.value = if (remoteBook != null) {
                         BookDetailUiState.NotInLibrary(remoteBook)
