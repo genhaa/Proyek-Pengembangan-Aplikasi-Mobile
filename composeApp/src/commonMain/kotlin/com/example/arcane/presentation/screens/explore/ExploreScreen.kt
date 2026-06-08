@@ -93,13 +93,6 @@ fun ExploreScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    FilterChip(
-                        selected = selectedGenre == null,
-                        onClick = { viewModel.onGenreSelected(null) },
-                        label = { Text("Semua") }
-                    )
-                }
                 items(BOOK_GENRES) { genre ->
                     FilterChip(
                         selected = selectedGenre == genre,
