@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Route {
+    @Serializable data object Splash : Route
     @Serializable data object Home : Route
     @Serializable data class Explore(val searchQuery: String = "") : Route
     @Serializable data object Letterbox : Route

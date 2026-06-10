@@ -32,6 +32,7 @@ import com.example.arcane.presentation.screens.home.HomeScreen
 import com.example.arcane.presentation.screens.ai.AIAssistantScreen
 import com.example.arcane.presentation.screens.letterbox.LetterboxScreen
 import com.example.arcane.presentation.screens.settings.SettingsScreen
+import com.example.arcane.presentation.screens.splash.SplashScreen
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -116,7 +117,7 @@ fun AppNavHost(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Route.Home,
+            startDestination = Route.Splash,
             modifier = modifier.padding(paddingValues),
             enterTransition = {
                 slideInHorizontally(initialOffsetX = { it }) + fadeIn()
@@ -131,6 +132,17 @@ fun AppNavHost(
                 slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
             }
         ) {
+            composable<Route.Splash> {
+                SplashScreen(
+                    onNavigateToHome = {
+                        navController.navigate(Route.Home) {
+                            popUpTo(Route.Splash) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
             composable<Route.Home> {
                 HomeScreen(
                     onNavigateToExplore = { navigationActions.navigateToExplore("") },
