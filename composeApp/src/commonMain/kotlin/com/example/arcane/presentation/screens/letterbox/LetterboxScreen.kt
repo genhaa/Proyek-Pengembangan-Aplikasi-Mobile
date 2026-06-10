@@ -220,7 +220,7 @@ private fun RecommendationCard(
             when (recommendationState) {
                 is RecommendationState.Idle -> {
                     Text(
-                        text = "Kamu sudah membaca $totalBooks buku fiksi. Mau AI rekomendasikan literatur baru yang setipe dengan seleramu?",
+                        text = "Kamu sudah membaca $totalBooks buku. Mau AI rekomendasikan literatur baru yang setipe dengan seleramu?",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )

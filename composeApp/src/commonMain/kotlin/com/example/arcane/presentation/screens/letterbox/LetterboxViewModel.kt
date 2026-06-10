@@ -58,6 +58,7 @@ class LetterboxViewModel(
             _isRefreshing.value = true
             kotlinx.coroutines.delay(800)
             _isRefreshing.value = false
+
         }
     }
 
