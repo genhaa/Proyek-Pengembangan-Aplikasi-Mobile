@@ -74,13 +74,15 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+
+            implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
-            implementation(libs.compose.ui.test)
         }
 
         androidMain.dependencies {
@@ -106,7 +108,6 @@ kotlin {
     }
 }
 
-
 android {
     namespace = "com.example.arcane"
     compileSdk = 36
@@ -125,7 +126,6 @@ android {
             ?: localProperties.getProperty("GOOGLE_BOOKS_API_KEY", "")
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
-
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksKey\"")
     }
 
@@ -168,18 +168,15 @@ kover {
         filters {
             excludes {
                 classes(
-                    // Generated code
                     "*.di.*",
                     "*.BuildConfig",
                     "*_Factory*",
                     "*ComposableSingletons*",
                     "*.ArcaneDatabase*",
                     "*.ArcaneDatabase",
-                    // Data layer - network & local (tidak di-test karena butuh real DB/network)
                     "com.example.arcane.data.remote.*",
                     "com.example.arcane.data.local.*",
                     "com.example.arcane.data.repository.*",
-                    // UI layer - Composable functions
                     "com.example.arcane.presentation.components.*",
                     "com.example.arcane.presentation.navigation.*",
                     "com.example.arcane.presentation.screens.ai.*",
