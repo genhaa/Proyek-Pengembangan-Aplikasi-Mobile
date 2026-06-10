@@ -6,6 +6,8 @@ import com.example.arcane.domain.model.Book
 import com.example.arcane.domain.model.ReadingStatus
 import com.example.arcane.domain.repository.AIRepository
 import com.example.arcane.domain.repository.BookRepository
+import com.example.arcane.domain.repository.FolderRepository
+import com.example.arcane.domain.model.Folder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +30,8 @@ data class AIRecommendationBook(
 
 class LetterboxViewModel(
     private val repository: BookRepository,
-    private val aiRepository: AIRepository
+    private val aiRepository: AIRepository,
+    private val folderRepository: FolderRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<LetterboxUiState> = repository
@@ -42,6 +45,14 @@ class LetterboxViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = LetterboxUiState.Loading
+        )
+
+    val folders: StateFlow<List<Folder>> = folderRepository
+        .getAllFolders()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
 
     private val _reviewStates = MutableStateFlow<Map<String, ReviewState>>(emptyMap())
@@ -59,6 +70,13 @@ class LetterboxViewModel(
             kotlinx.coroutines.delay(800)
             _isRefreshing.value = false
 
+        }
+    }
+
+    fun createFolder(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            folderRepository.createFolder(name.trim())
         }
     }
 

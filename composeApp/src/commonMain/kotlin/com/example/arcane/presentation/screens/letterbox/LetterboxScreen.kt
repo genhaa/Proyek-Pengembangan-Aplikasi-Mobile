@@ -38,8 +38,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,9 +73,14 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun LetterboxScreen(
     onNavigateToBook: (String) -> Unit,
+    onNavigateToBookDetail: (String, Long) -> Unit,
+    onNavigateToFolderDetail: (Long) -> Unit,
     viewModel: LetterboxViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val folders by viewModel.folders.collectAsStateWithLifecycle()
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    var showCreateFolderDialog by remember { mutableStateOf(false) }
     val reviewStates by viewModel.reviewStates.collectAsStateWithLifecycle()
     val recommendationState by viewModel.recommendationState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -87,16 +106,59 @@ fun LetterboxScreen(
                 windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
+        },
+        floatingActionButton = {
+            if (selectedTabIndex == 1) {
+                FloatingActionButton(onClick = { showCreateFolderDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Create Folder")
+                }
+            }
         }
     ) { paddingValues ->
-        // 🔥 FIX STRUKTUR BLOK: PullToRefreshBox membungkus area fungsional secara presisi
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { viewModel.refreshLetterboxData() },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        if (showCreateFolderDialog) {
+            var folderName by remember { mutableStateOf("") }
+            AlertDialog(
+                onDismissRequest = { showCreateFolderDialog = false },
+                title = { Text("Buat Folder Baru") },
+                text = {
+                    OutlinedTextField(
+                        value = folderName,
+                        onValueChange = { folderName = it },
+                        label = { Text("Nama Folder") }
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.createFolder(folderName)
+                            showCreateFolderDialog = false
+                        }
+                    ) { Text("Simpan") }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showCreateFolderDialog = false }) { Text("Batal") }
+                }
+            )
+        }
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                Tab(
+                    selected = selectedTabIndex == 0,
+                    onClick = { selectedTabIndex = 0 },
+                    text = { Text("Buku") }
+                )
+                Tab(
+                    selected = selectedTabIndex == 1,
+                    onClick = { selectedTabIndex = 1 },
+                    text = { Text("Folder") }
+                )
+            }
+            if (selectedTabIndex == 0) {
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = { viewModel.refreshLetterboxData() },
+                    modifier = Modifier.fillMaxSize()
+                ) {
             when (val state = uiState) {
                 is LetterboxUiState.Loading -> LoadingIndicator()
 
@@ -155,8 +217,39 @@ fun LetterboxScreen(
                             LetterboxBookCard(
                                 book = book,
                                 reviewState = reviewStates[book.googleBookId] ?: ReviewState.Idle,
-                                onGenerateReview = { viewModel.generateReview(book) }
+                                onGenerateReview = { viewModel.generateReview(book) },
+                                onBookClick = { onNavigateToBookDetail(book.googleBookId, book.id) }
                             )
+                        }
+                    }
+                }
+            }
+        }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(folders) { folder ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .clickable { onNavigateToFolderDetail(folder.id) },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(folder.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
                         }
                     }
                 }
@@ -344,9 +437,9 @@ private fun RecommendationCard(
 }
 
 @Composable
-private fun LetterboxBookCard(book: Book, reviewState: ReviewState, onGenerateReview: () -> Unit) {
+private fun LetterboxBookCard(book: Book, reviewState: ReviewState, onGenerateReview: () -> Unit, onBookClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onBookClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {

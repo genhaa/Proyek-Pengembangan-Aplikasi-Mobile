@@ -33,6 +33,7 @@ import com.example.arcane.presentation.screens.ai.AIAssistantScreen
 import com.example.arcane.presentation.screens.letterbox.LetterboxScreen
 import com.example.arcane.presentation.screens.settings.SettingsScreen
 import com.example.arcane.presentation.screens.splash.SplashScreen
+import com.example.arcane.presentation.screens.folder.FolderDetailScreen
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -166,6 +167,12 @@ fun AppNavHost(
                 LetterboxScreen(
                     onNavigateToBook = { judulBukuDariAI ->
                         navigationActions.navigateToExplore(judulBukuDariAI)
+                    },
+                    onNavigateToBookDetail = { googleBookId, localBookId ->
+                        navigationActions.navigateToBookDetail(googleBookId, localBookId)
+                    },
+                    onNavigateToFolderDetail = { folderId ->
+                        navigationActions.navigateToFolderDetail(folderId)
                     }
                 )
             }
@@ -187,6 +194,17 @@ fun AppNavHost(
                 AIAssistantScreen(
                     initialText = "Buku: ${route.bookTitle}\n\nDeskripsi: ${route.bookDescription}",
                     onNavigateBack = { navigationActions.navigateBack() }
+                )
+            }
+
+            composable<Route.FolderDetail> { backStackEntry ->
+                val route: Route.FolderDetail = backStackEntry.toRoute()
+                FolderDetailScreen(
+                    folderId = route.folderId,
+                    onNavigateBack = { navigationActions.navigateBack() },
+                    onNavigateToBook = { googleBookId, localBookId ->
+                        navigationActions.navigateToBookDetail(googleBookId, localBookId)
+                    }
                 )
             }
 
@@ -229,6 +247,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateToBookDetail(googleBookId: String, localBookId: Long) {
             navController.navigate(Route.BookDetail(googleBookId, localBookId))
+        }
+
+        override fun navigateToFolderDetail(folderId: Long) {
+            navController.navigate(Route.FolderDetail(folderId))
         }
 
         override fun navigateToResearchAssistant(bookTitle: String, bookDescription: String) {
