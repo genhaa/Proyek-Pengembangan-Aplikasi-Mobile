@@ -6,6 +6,20 @@ import com.example.arcane.domain.repository.BookRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import com.example.arcane.domain.repository.FolderRepository
+import com.example.arcane.domain.model.Folder
+
+class FakeFolderRepository : FolderRepository {
+    override suspend fun createFolder(name: String) {}
+    override fun getAllFolders(): Flow<List<Folder>> = flowOf(emptyList())
+    override suspend fun getFolderById(id: Long): Folder? = null
+    override suspend fun updateFolderName(id: Long, newName: String) {}
+    override suspend fun deleteFolder(id: Long) {}
+    override suspend fun addBookToFolder(bookId: Long, folderId: Long) {}
+    override suspend fun removeBookFromFolder(bookId: Long, folderId: Long) {}
+    override fun getFoldersForBook(bookId: Long): Flow<List<Folder>> = flowOf(emptyList())
+    override fun getBooksInFolder(folderId: Long): Flow<List<Book>> = flowOf(emptyList())
+}
 
 class FakeBookRepository : BookRepository {
     private val _books = MutableStateFlow<List<Book>>(emptyList())

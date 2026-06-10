@@ -23,13 +23,15 @@ class BookDetailViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepository: FakeBookRepository
+    private lateinit var fakeFolderRepository: FakeFolderRepository
     private lateinit var viewModel: BookDetailViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeBookRepository()
-        viewModel = BookDetailViewModel(fakeRepository)
+        fakeFolderRepository = FakeFolderRepository()
+        viewModel = BookDetailViewModel(fakeRepository, fakeFolderRepository)
     }
 
     @AfterTest
