@@ -18,18 +18,19 @@ Proyek ini dikembangkan oleh **B Square** sebagai bagian dari tugas mata kuliah 
 
 ---
 
-## 🚀 Fitur Aplikasi (Sprint 1 Planning)
+## 🚀 Fitur Aplikasi (Sprint 1 Planning & Status)
 
 ### Fitur Utama (Minimum Requirements):
-- [ ] **Modern UI/UX:** Minimal 5 layar menggunakan Material Design 3.
-- [ ] **Data Management:** Integrasi REST API menggunakan Ktor atau Database Lokal SQLDelight.
-- [ ] **State Management:** Implementasi StateFlow untuk reaktivitas UI.
-- [ ] **Navigation:** Navigasi antar layar yang aman (Safe Args).
+- [x] **Modern UI/UX:** Lebih dari 5 layar (Home, Bookshelf, Book Detail, Explore, Settings, AIAssistant) menggunakan Material Design 3 bertema ungu/indigo premium.
+- [x] **Data Management:** Integrasi REST API (Google Books API) menggunakan Ktor dan Database Lokal SQLDelight.
+- [x] **State Management:** Implementasi StateFlow untuk reaktivitas UI di seluruh halaman.
+- [x] **Navigation:** Navigasi antar layar yang aman dengan argument menggunakan Compose Navigation.
 
 ### Fitur Tambahan (Bonus):
-- [ ] Support iOS Platform.
-- [ ] Dark Mode Support.
-- [ ] [Tulis fitur unikmu di sini, misal: Integrasi Google Maps/AI].
+- [x] Support iOS Platform (Kotlin Multiplatform).
+- [x] Dark Mode & Light Mode Support.
+- [x] **Integrasi AI:** Google Gemini AI untuk analisis riset, literatur ilmiah, sintesis otomatis, dan asisten riset cerdas.
+- [x] **Penyimpanan Gambar Lokal:** Menyimpan foto profil secara lokal pada sandbox OS menggunakan Okio FileSystem untuk efisiensi memori.
 
 ---
 
@@ -45,17 +46,34 @@ Aplikasi ini dibangun menggunakan **Clean Architecture** dan pola **MVVM (Model-
 
 ---
 
-## 🛠️ Project Setup & CI/CD
-Proyek ini sudah dilengkapi dengan **GitHub Actions** untuk Continuous Integration (CI). Setiap perubahan kode (push/pull request) akan melewati proses:
-1. **Lint Check:** Memastikan standar penulisan kode.
-2. **Build Test:** Memastikan aplikasi dapat dicompile dengan sukses.
-3. **Unit Testing:** Menjalankan test otomatis sebelum masuk ke branch utama.
+## 🛠️ Project Setup, CI/CD, & Testing
+
+Proyek ini sudah dilengkapi dengan **GitHub Actions** untuk Continuous Integration (CI). Setiap push atau pull request otomatis menjalankan kompilasi build dan seluruh unit test.
+
+### 🧪 Petunjuk Pengujian (Test Instructions)
+
+1. **Menjalankan Unit Test (Local JVM):**
+   Untuk menjalankan seluruh test untuk ViewModel dan business logic secara lokal:
+   ```bash
+   ./gradlew testDebugUnitTest
+   ```
+2. **Menjalankan UI Test (Instrumented Test):**
+   Untuk menjalankan UI test di emulator Android atau perangkat fisik:
+   ```bash
+   ./gradlew connectedAndroidTest
+   ```
+3. **Menjalankan Laporan Code Coverage (Kover):**
+   Gunakan plugin Kover untuk melacak cakupan kode pengujian:
+   ```bash
+   ./gradlew koverHtmlReport
+   ```
+   Laporan cakupan kode dalam format HTML akan tersedia di folder `composeApp/build/reports/kover/html/index.html`.
 
 ---
 
 ## 📈 Rencana Pengerjaan (Project Plan)
-- **Sprint 1:** Project Setup, Architecture Setup, & UI Mockup.
-- **Sprint 2:** Core Features & API Integration.
-- **Sprint 3:** Advanced Features & State Management.
-- **Sprint 4:** Testing, Bug Fixing, & Polishing.
-- **Sprint 5:** Final fixes, demo preparation.
+- **Sprint 1 (Selesai):** Project Setup, Clean Architecture, & UI Mockup.
+- **Sprint 2 (Selesai):** Core Features, Local Storage SQLDelight, & Google Books REST API Integration.
+- **Sprint 3 (Selesai):** Gemini AI Integration (Research Assistant), Settings Page, & Dark Mode.
+- **Sprint 4 (Selesai):** Testing (Unit Testing & UI Testing 50%+ coverage), Bug Fixing (Local storage path optimization), & UI Polishing.
+- **Sprint 5 (Selesai):** Release APK, Final Demo Preparation, & Documentation.
