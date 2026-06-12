@@ -54,6 +54,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.arcane.domain.model.Book
+import com.example.arcane.domain.model.Folder
 import com.example.arcane.presentation.components.EmptyState
 import com.example.arcane.presentation.components.ErrorState
 import com.example.arcane.presentation.components.LoadingIndicator
@@ -81,6 +88,8 @@ fun LetterboxScreen(
     val folders by viewModel.folders.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableStateOf(0) }
     var showCreateFolderDialog by remember { mutableStateOf(false) }
+    var folderToEdit by remember { mutableStateOf<Folder?>(null) }
+    var expandedMenuFolderId by remember { mutableStateOf<Long?>(null) }
     val reviewStates by viewModel.reviewStates.collectAsStateWithLifecycle()
     val recommendationState by viewModel.recommendationState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -115,28 +124,49 @@ fun LetterboxScreen(
             }
         }
     ) { paddingValues ->
-        if (showCreateFolderDialog) {
-            var folderName by remember { mutableStateOf("") }
+        if (showCreateFolderDialog || folderToEdit != null) {
+            val isEditMode = folderToEdit != null
+            var folderName by remember { mutableStateOf(folderToEdit?.name ?: "") }
             AlertDialog(
-                onDismissRequest = { showCreateFolderDialog = false },
-                title = { Text("Buat Folder Baru") },
+                onDismissRequest = { 
+                    showCreateFolderDialog = false
+                    folderToEdit = null
+                },
+                title = { Text(if (isEditMode) "Edit Nama Folder" else "Buat Folder Baru") },
                 text = {
-                    OutlinedTextField(
+                    TextField(
                         value = folderName,
                         onValueChange = { folderName = it },
-                        label = { Text("Nama Folder") }
+                        placeholder = { Text("Nama Folder") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.createFolder(folderName)
+                            val current = folderToEdit
+                            if (isEditMode && current != null) {
+                                viewModel.updateFolder(current.id, folderName)
+                            } else {
+                                viewModel.createFolder(folderName)
+                            }
                             showCreateFolderDialog = false
+                            folderToEdit = null
                         }
                     ) { Text("Simpan") }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { showCreateFolderDialog = false }) { Text("Batal") }
+                    OutlinedButton(onClick = { 
+                        showCreateFolderDialog = false
+                        folderToEdit = null
+                    }) { Text("Batal") }
                 }
             )
         }
@@ -241,14 +271,40 @@ fun LetterboxScreen(
                                 .clickable { onNavigateToFolderDetail(folder.id) },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize().padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(folder.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(folder.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                                Box(modifier = Modifier.align(Alignment.TopEnd)) {
+                                    IconButton(onClick = { expandedMenuFolderId = folder.id }) {
+                                        Icon(Icons.Default.MoreVert, contentDescription = "Opsi Folder")
+                                    }
+                                    DropdownMenu(
+                                        expanded = expandedMenuFolderId == folder.id,
+                                        onDismissRequest = { expandedMenuFolderId = null }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Edit") },
+                                            onClick = {
+                                                folderToEdit = folder
+                                                expandedMenuFolderId = null
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Hapus") },
+                                            onClick = {
+                                                viewModel.deleteFolder(folder.id)
+                                                expandedMenuFolderId = null
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

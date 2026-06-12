@@ -80,6 +80,19 @@ class LetterboxViewModel(
         }
     }
 
+    fun deleteFolder(id: Long) {
+        viewModelScope.launch {
+            folderRepository.deleteFolder(id)
+        }
+    }
+
+    fun updateFolder(id: Long, newName: String) {
+        if (newName.isBlank()) return
+        viewModelScope.launch {
+            folderRepository.updateFolderName(id, newName.trim())
+        }
+    }
+
     fun generateReview(book: Book) {
         viewModelScope.launch {
             _reviewStates.update { current ->
