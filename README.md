@@ -15,23 +15,23 @@ Proyek ini dikembangkan oleh **B Square** sebagai bagian dari tugas mata kuliah 
 
 ---
 
-## ✨ Sorotan Fitur
+## Sorotan Fitur
 
-### 🌟 Fitur Utama:
-- 🎨 **Modern UI/UX:** Tampilan antarmuka memukau dengan lebih dari 5 layar utama (Home, Bookshelf, Book Detail, Explore, Settings, AI Assistant) menggunakan Material Design 3 bertema ungu/indigo yang premium.
-- 🗄️ **Data Management Cerdas:** Integrasi mulus REST API dari Google Books menggunakan Ktor, didukung dengan Database Lokal SQLDelight untuk akses data yang cepat.
-- ⚡ **Reactive State Management:** Menggunakan StateFlow untuk memastikan antarmuka yang sangat responsif terhadap perubahan data secara real-time.
-- 🧭 **Type-Safe Navigation:** Sistem navigasi antar layar yang aman dan terstruktur menggunakan Compose Navigation.
+### Fitur Utama:
+- **Modern UI/UX:** Tampilan antarmuka memukau dengan lebih dari 5 layar utama (Home, Bookshelf, Book Detail, Explore, Settings, AI Assistant) menggunakan Material Design 3 bertema ungu/indigo yang premium.
+- **Data Management Cerdas:** Integrasi mulus REST API dari Google Books menggunakan Ktor, didukung dengan Database Lokal SQLDelight untuk akses data yang cepat.
+- **Reactive State Management:** Menggunakan StateFlow untuk memastikan antarmuka yang sangat responsif terhadap perubahan data secara real-time.
+- **Type-Safe Navigation:** Sistem navigasi antar layar yang aman dan terstruktur menggunakan Compose Navigation.
 
-### 🚀 Fitur Lanjutan (Bonus):
-- 🍎 **Lintas Platform:** Mendukung penuh platform **iOS** berkat arsitektur Kotlin Multiplatform.
-- 🌓 **Dinamis:** Dukungan *Dark Mode* dan *Light Mode* yang responsif terhadap pengaturan perangkat pengguna.
-- 🤖 **Asisten Riset AI:** Integrasi mendalam dengan **Google Gemini AI** untuk analisis riset, bedah literatur ilmiah, serta sintesis informasi otomatis.
-- 💾 **Penyimpanan Lokal Optimal:** Penyimpanan foto profil secara lokal pada *sandbox OS* menggunakan Okio FileSystem untuk menjamin efisiensi penggunaan memori.
+### Fitur Lanjutan (Bonus):
+- **Lintas Platform:** Mendukung penuh platform **iOS** berkat arsitektur Kotlin Multiplatform.
+- **Dinamis:** Dukungan *Dark Mode* dan *Light Mode* yang responsif terhadap pengaturan perangkat pengguna.
+- **Asisten Riset AI:** Integrasi mendalam dengan **Google Gemini AI** untuk analisis riset, bedah literatur ilmiah, serta sintesis informasi otomatis.
+- **Penyimpanan Lokal Optimal:** Penyimpanan foto profil secara lokal pada *sandbox OS* menggunakan Okio FileSystem untuk menjamin efisiensi penggunaan memori.
 
 ---
 
-## 🏗️ Arsitektur & Teknologi
+## Arsitektur & Teknologi
 
 ARCANE dibangun di atas fondasi **Clean Architecture** dan pola **MVVM (Model-View-ViewModel)**. Ini memastikan basis kode yang sangat modular, mudah diuji (testable), dan gampang dikelola untuk jangka panjang.
 
@@ -87,7 +87,7 @@ ARCANE dibangun di atas fondasi **Clean Architecture** dan pola **MVVM (Model-Vi
 
 ---
 
-## 📁 Struktur Basis Kode
+## Struktur Basis Kode
 
 Struktur folder terpusat pada `commonMain` untuk memastikan pembagian kode yang maksimal antar platform:
 
@@ -105,7 +105,7 @@ composeApp/src/
 
 ---
 
-## 🚀 Panduan Memulai
+## Panduan Memulai
 
 ### Prasyarat
 
@@ -142,7 +142,7 @@ composeApp/src/
 
 ---
 
-## 🧪 Pengujian (Testing & CI/CD)
+## Pengujian (Testing & CI/CD)
 
 Kualitas ARCANE dijaga menggunakan **GitHub Actions** untuk alur *Continuous Integration (CI)* otomatis pada setiap *push* dan *pull request*.
 
@@ -156,7 +156,7 @@ Kualitas ARCANE dijaga menggunakan **GitHub Actions** untuk alur *Continuous Int
 ./gradlew connectedAndroidTest
 ```
 
-### 📊 Laporan Cakupan Kode (Code Coverage)
+### Laporan Cakupan Kode (Code Coverage)
 Untuk melihat seberapa luas pengujian menjangkau kode aplikasi menggunakan Kover:
 ```bash
 ./gradlew koverHtmlReport
@@ -178,25 +178,44 @@ Untuk melihat seberapa luas pengujian menjangkau kode aplikasi menggunakan Kover
 
 ---
 
-## 📸 Cuplikan Layar (Screenshot)
+## Cuplikan Layar (Screenshot)
 
-*(Tambahkan cuplikan layar antarmuka pengguna di bawah ini)*
-<!--
-| Beranda (Home) | Jelajah (Explore) | Asisten AI |
-|:---:|:---:|:---:|
-| ![Home](link-to-home-image) | ![Explore](link-to-explore-image) | ![AI Assistant](link-to-ai-image) |
--->
+### Home Screen
+![Home_Screen](Image/HomeScreen.jpeg)
+
+### Detail Book Screen
+![Detail_Book_Screen](Image/DetailBookScreen.jpeg)
+
+### Folder Screen
+![Folder_Screen](Image/FolderScreen.jpeg)
+
+### Search Bar
+![Search_Bar](Image/Searchbar.jpeg)
+
+### Setting Screen
+![Setting_Screen](Image/SettingScreen.jpeg)
+
+### Dark Mode
+![Dark_Mode](Image/DarkMode.jpeg)
+
+### Asisten AI 1
+![Asisten_AI_1](Image/AsistenAI_1.jpeg)
+
+### Asisten AI 2
+![Asisten_AI_2](Image/AsistenAI_2.jpeg)
+
+### Letterbox Screen
+![Letterbox_Screen](Image/LetterboxScreen.jpeg)
 
 ---
 
-## 🎥 Tautan Video Demonstrasi
-
+## Tautan Video Demonstrasi
 Saksikan bagaimana ARCANE merevolusi cara Anda membaca dan melakukan riset:
-- [🔗 Tonton Video Demo ARCANE di Sini](#)
+- https://youtu.be/oEA0LkJx3G4?si=-ZgSoyktMuY4y1sG
 
 ---
 
-## 👨‍🏫 Dosen Pembimbing
+## Dosen Pembimbing
 ### Bapak Habib
 [GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
