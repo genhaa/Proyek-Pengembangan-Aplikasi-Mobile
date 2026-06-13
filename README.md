@@ -178,34 +178,83 @@ Untuk melihat seberapa luas pengujian menjangkau kode aplikasi menggunakan Kover
 
 ---
 
-## Cuplikan Layar (Screenshot)
+## 📱 Screenshots
 
-### Home Screen
-![Home_Screen](Image/HomeScreen.jpeg)
+<table>
+  <tr>
+    <th align="center">Home Screen</th>
+    <th align="center">Detail Book Screen</th>
+    <th align="center">Folder Screen</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="Image/HomeScreen.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/DetailBookScreen.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/FolderScreen.jpeg" width="200"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Halaman utama aplikasi Arcane.</td>
+    <td align="center">Detail informasi buku yang dipilih.</td>
+    <td align="center">Manajemen folder koleksi buku.</td>
+  </tr>
+</table>
 
-### Detail Book Screen
-![Detail_Book_Screen](Image/DetailBookScreen.jpeg)
+<br>
 
-### Folder Screen
-![Folder_Screen](Image/FolderScreen.jpeg)
+<table>
+  <tr>
+    <th align="center">Search Bar</th>
+    <th align="center">Setting Screen</th>
+    <th align="center">Dark Mode</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="Image/Searchbar.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/SettingScreen.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/DarkMode.jpeg" width="200"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Pencarian buku secara cepat.</td>
+    <td align="center">Pengaturan preferensi pengguna.</td>
+    <td align="center">Tampilan dark mode aplikasi.</td>
+  </tr>
+</table>
 
-### Search Bar
-![Search_Bar](Image/Searchbar.jpeg)
+<br>
 
-### Setting Screen
-![Setting_Screen](Image/SettingScreen.jpeg)
-
-### Dark Mode
-![Dark_Mode](Image/DarkMode.jpeg)
-
-### Asisten AI 1
-![Asisten_AI_1](Image/AsistenAI_1.jpeg)
-
-### Asisten AI 2
-![Asisten_AI_2](Image/AsistenAI_2.jpeg)
-
-### Letterbox Screen
-![Letterbox_Screen](Image/LetterboxScreen.jpeg)
+<table>
+  <tr>
+    <th align="center">Asisten AI 1</th>
+    <th align="center">Asisten AI 2</th>
+    <th align="center">Letterbox Screen</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="Image/AsistenAI_1.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/AsistenAI_2.jpeg" width="200"/>
+    </td>
+    <td align="center">
+      <img src="Image/LetterboxScreen.jpeg" width="200"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Interaksi dengan asisten AI.</td>
+    <td align="center">Lanjutan fitur asisten AI.</td>
+    <td align="center">Tampilan letterbox aplikasi.</td>
+  </tr>
+</table>
 
 ---
 
