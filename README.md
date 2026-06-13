@@ -163,8 +163,7 @@ Untuk melihat seberapa luas pengujian menjangkau kode aplikasi menggunakan Kover
 ```
 *Laporan komprehensif dalam format HTML dapat dilihat di: `composeApp/build/reports/kover/html/index.html`*
 
-*(Letakkan Screenshot Laporan Kover di Sini)*
-<!-- ![Coverage Report](link-to-coverage-image) -->
+![Laporan Kover](./Image/laporankover.jpeg)
 
 ---
 
